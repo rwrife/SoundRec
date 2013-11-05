@@ -13,11 +13,40 @@ void ProcessCmdNotify(MemPtr cmdPBP)
 		switch(event->eType)
 		{
 			case 0x0400://keyDown byteswap		   			
-			{		   				
-				if(event->data.keyDown.chr == 1026) //byteswapped value
+			{	
+				void * obrkey;
+				void * action = NULL;
+				
+   				if(!FtrGet(appFileCreator, oneButtonFtrOBRKey, (UInt32*) &obrkey))
+   				{
+   					UInt16 BSKeyChr = GetChrCode(*((UInt8*) obrkey), true);
+   					if(event->data.keyDown.chr == BSKeyChr)
+   					{
+   						if(!FtrGet(appFileCreator, oneButtonFtrAction, (UInt32*)&action))
+						{
+							int tmpVal = *((UInt8*) action);
+							if(tmpVal == 0)
+							{
+								//Err err ;	
+								void * tckData;
+					   			EvtGetEvent(event, 1); //kill the phone app from running
+					   			if(FtrGet(appFileCreator, oneButtonFtrTicks, (UInt32*)&tckData))
+					   				FtrPtrNew(appFileCreator, oneButtonFtrTicks, 4, &tckData);
+								WriteInt32FtrValue(tckData, TimGetTicks());
+								WriteIntFtrValue(action, 1);							
+								SendNilEvent();
+							}else if(tmpVal == 2)
+								WriteIntFtrValue(action, 0);
+							else if(tmpVal == 3)
+								EvtGetEvent(event, 1);	
+							else
+								EvtGetEvent(event, 1);  
+						}
+   					}
+   				}			   				
+				else if(event->data.keyDown.chr == 1026) //if the obr key has not been set, use default
 				{
-					UInt8	val = 1;
-					void 	*action;			   				
+					UInt8	val = 1;			   				
 					if(!FtrGet(appFileCreator, oneButtonFtrAction, (UInt32*)&action))
 					{
 						int tmpVal = *((UInt8*) action);
@@ -32,7 +61,10 @@ void ProcessCmdNotify(MemPtr cmdPBP)
 							WriteIntFtrValue(action, 1);							
 							SendNilEvent();
 						}else if(tmpVal == 2)
+						{
 							WriteIntFtrValue(action, 0);
+							EvtGetEvent(event, 1);
+						}
 						else if(tmpVal == 3)
 							EvtGetEvent(event, 1);	
 						else
@@ -44,6 +76,17 @@ void ProcessCmdNotify(MemPtr cmdPBP)
    			default:	//idle action (nilEvent)
    			{
    				void * action;
+				UInt16 KeyBit = keyBitHard1;
+				UInt16 KeyChr = 516;
+				void * obrkey;			
+
+				if(!FtrGet(appFileCreator, oneButtonFtrOBRKey, (UInt32*) &obrkey))
+				{
+					UInt16 KeyBits[5] = {keyBitHard1, keyBitHard2, keyBitHard3, keyBitHard4, keyBitRockerCenter};
+					KeyBit = KeyBits[*((UInt8*) obrkey)-1];
+					KeyChr = GetChrCode(*((UInt8*) obrkey), false);
+				}
+														   				
    				if(!FtrGet(appFileCreator, oneButtonFtrAction, (UInt32*) &action))
    				{
    					UInt8 tmpVal = *((UInt8*) action);
@@ -52,7 +95,7 @@ void ProcessCmdNotify(MemPtr cmdPBP)
    					{								
 		   				UInt32 keyState = KeyCurrentState();				   		
 
-		   				if(keyState & keyBitHard1)
+		   				if(keyState & KeyBit)
 		   				{
 		   					void * data; 					
 							if (!FtrGet(appFileCreator, oneButtonFtrTicks, (UInt32*)&data))
@@ -71,13 +114,13 @@ void ProcessCmdNotify(MemPtr cmdPBP)
 							}
 
 		   				}else
-		   				{
-			   				//requeue and do not process the next keydown
+		   				{									   							   					
+			   				//requeue and do not process the next keydown			   				
 			   				WriteIntFtrValue(action, 2);
 			   				if(keyState & 0xe006)
-			   					SendKeyEvent(true);
+			   					SendKeyEvent(KeyChr, true);
 			   				else
-			   					SendKeyEvent(false);
+			   					SendKeyEvent(KeyChr, false);
 		   				}
 		   			}
 		   			
@@ -85,7 +128,7 @@ void ProcessCmdNotify(MemPtr cmdPBP)
 		   			{
 		   				UInt32 keyState = KeyCurrentState();				   		
 
-		   				if(!(keyState & keyBitHard1)) //done recording
+		   				if(!(keyState & KeyBit)) //done recording
 		   				{
 		   					Err error;
 		   					SndStreamRef sndRef;
@@ -174,13 +217,13 @@ static void WriteInt32FtrValue(void *VarPtr, UInt32 Value)
 	DmWrite(VarPtr, 0, &Value, 4);
 }
 
-static void SendKeyEvent(Boolean optionKey)
+static void SendKeyEvent(WChar keyChr, Boolean optionKey)
 {
 	EventType event;	
 	event.eType = 0x0004;
-	event.data.keyDown.chr = 516;
-	event.data.keyDown.keyCode = 0;
-	event.data.keyDown.modifiers = 12;
+	event.data.keyDown.chr = keyChr;
+	event.data.keyDown.keyCode = 0;	
+	event.data.keyDown.modifiers = 12;	
 	EvtAddEventToQueue(&event);	
 }
 
@@ -449,4 +492,25 @@ static Err CaptureSound(void *userDataP, SndStreamRef stream, void *bufferP, UIn
 	MemSet(bufferP, MemPtrSize(bufferP), 0);
 	DmWrite(userDataP, 0, &dataBlockP, sizeof(dataBlockP));
 	return errNone;
+}
+
+static void ByteSwap16(UInt16 *bytes)
+{
+	UInt8 t;
+	MemMove(&t, bytes, 1);
+	MemMove((void *) ((UInt8 *) bytes), (void *) ((UInt8 *) bytes + 1), 1);
+	MemMove((void *) ((UInt8 *) bytes + 1), &t, 1);
+}
+
+static UInt16 GetChrCode(int KeyNum, Boolean ByteSwap)
+{
+	//support for 4 hard keys and center
+	UInt16 ChrCodes[5] = {516,517,518,519,310};
+	UInt16 BSChrCodes[5] = {1026,1282,1538,1794,13825};
+	
+	if(ByteSwap)
+		return BSChrCodes[KeyNum-1];
+	else
+		return ChrCodes[KeyNum-1];
+	
 }

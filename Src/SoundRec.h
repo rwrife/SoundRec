@@ -80,15 +80,12 @@ struct AudioRecList
 	Char	*Description;
 	Boolean SupportsAlarm;
 	Boolean Alarm;
-	UInt16 AlarmMonth;
-	UInt16 AlarmDay;
-	UInt16 AlarmYear;
-	UInt16 AlarmHour;
-	UInt16 AlarmMinute;	
+	DateTimeType AlarmDateTime;
 	struct	AudioRecList *next;	
 };
 
 typedef struct{
+	UInt8	OBRKey;
 	Boolean UseBeep;
 	Boolean OBRAfterReset;
 	Boolean UseCard;
@@ -120,11 +117,7 @@ typedef struct
 	UInt16 sampleRate;
 	UInt32 dataLen;	
 	Boolean alarm;
-	UInt16 alarmMonth;
-	UInt16 alarmDay;
-	UInt16 alarmYear;
-	UInt16 alarmHour;
-	UInt16 alarmMinute;	
+	DateTimeType alarmDateTime;
 }RecordingType;
 
 typedef struct AudioRecList audio;
@@ -153,6 +146,8 @@ static void SetControlLabel(const FormType *formP, UInt16 objID, char * text);
 static void DrawCenterChars(int top, FontID font, char* text);
 static void ShowDetails();
 static Boolean DetailsFormHandleEvent(EventType * eventP);
+static WinHandle DrawMessage(char* text);
+static void KillMessage(WinHandle orgWin);
 
 
 #endif /* SOUNDREC_H_ */

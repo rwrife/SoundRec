@@ -28,13 +28,15 @@ static Boolean		recording = false;
 static Boolean 		playing = false;
 static UInt16		gVolRefNum = sysInvalidRefNum;
 
-static char months[12][4] = {"Jan\0", "Feb\0", "Mar\0", "Apr\0", "May\0", "Jun\0", "Jul\0", "Aug\0", "Sep\0", "Oct\0", "Nov\0", "Dec\0"};	
+static char 		months[12][4] = {"Jan\0", "Feb\0", "Mar\0", "Apr\0", "May\0", "Jun\0", "Jul\0", "Aug\0", "Sep\0", "Oct\0", "Nov\0", "Dec\0"};	
 
 static struct 		PlaybackDataType sndData;
 static Boolean 		useCard = false;
 static Boolean 		useBeep = true;
 static Boolean 		useOBRAfterReset = false;
 static Boolean 		oneButton = false;
+static UInt8		obrKey = 1;
+static UInt8		t_obrKey = 1;
 static UInt8		sndQual = 24; //this is for the prefs screen
 static UInt16 		soundRate = 24000;
 static UInt8		recVol = 3;
@@ -44,14 +46,16 @@ static UInt16		lastHighlight = 0;
 static audio 		*audioList;
 static WinHandle 	progWin, savedWin; //this is for the progress bar
 static FormType 	*mainForm;
-static Boolean          timeOn = false;
-static UInt32           startTime = 0;//this is for the timer
-static UInt32           pauseTime = 0;//this is for the timer when pausing
-static UInt32           timePaused = 0;//this is for the timer when pausing
-static UInt32 hr = 0;
-static UInt32 min = 0;
-static UInt32 sec = 0;
-static char recDesc[40]="";
+static Boolean		timeOn = false;
+static UInt32		startTime = 0;//this is for the timer
+static UInt32		pauseTime = 0;//this is for the timer when pausing
+static UInt32		timePaused = 0;//this is for the timer when pausing
+static UInt32 		hr = 0;
+static UInt32 		min = 0;
+static UInt32 		sec = 0;
+static char 		recDesc[40]="";
+static DateTimeType	alarmDT;
+static audio 		*currentRecording;
 
 /*This function should check for the presence of the card
   and if it can be written and if the volume is mounted.
@@ -276,8 +280,9 @@ Exit:
 	}
 }
 
-static void *GetFormObjectPtr(FormPtr frmP, Int index)
+static void *GetFormObjectPtr(UInt16 formId, Int index)
 {
+	FormPtr frmP = FrmGetFormPtr (formId);
 	Word fldIndex = FrmGetObjectIndex(frmP, index);
 	return FrmGetObjectPtr(frmP, fldIndex);
 }
@@ -1171,7 +1176,16 @@ static void AppStop(void)
 	FrmCloseAllForms();
 	
 	if(oneButton)
+	{
+		void * ftrOBRKey = NULL;
+		
 		RegisterForNotifications();
+		
+		//setup for ANY key...no real need to deregister it unless you want to save memory
+		if(FtrGet(appFileCreator, 	oneButtonFtrOBRKey, (UInt32*) &ftrOBRKey) != 0)
+			FtrPtrNew(appFileCreator, 	oneButtonFtrOBRKey, sizeof(obrKey), &ftrOBRKey);
+		if(ftrOBRKey) DmWrite(ftrOBRKey, 0, &obrKey, sizeof(obrKey)); 		
+	}
 	else
 		UnregisterForNotifications();	
 }
@@ -1330,17 +1344,27 @@ static void SaveBuffer(void)
 			UInt16 index = dmMaxRecordIndex;
 			MemHandle h;
 			
-			h = DmNewRecord(recordingDb, &index,  54);
+			h = DmNewRecord(recordingDb, &index,  sizeof(RecordingType));
 			if(h)
 			{
 				MemPtr recPtr;
+				RecordingType recordingRec;
+				
+				recordingRec.version = SoundVersion;
+				StrCopy(recordingRec.recDesc, recDesc);
+				recordingRec.recordId = sndData.recordId;
+				recordingRec.frameCount = sndData.frameCount;
+				recordingRec.sampleRate = soundRate;
+				recordingRec.dataLen = sndData.dataLen;
+				recordingRec.alarm = false;
+				recordingRec.alarmDateTime.day = 0;
+				recordingRec.alarmDateTime.month = 0;
+				recordingRec.alarmDateTime.year = 0;
+				recordingRec.alarmDateTime.hour = 0;
+				recordingRec.alarmDateTime.minute = 0;
+											
 				recPtr = MemHandleLock(h);
-				DmWrite(recPtr, 0, &SoundVersion, 1);
-				DmWrite(recPtr, 1 , &recDesc[0], 40);
-				DmWrite(recPtr, 42, &sndData.recordId, 4);
-				DmWrite(recPtr, 46, &sndData.frameCount, 2);
-				DmWrite(recPtr, 48, &soundRate, 2);
-				DmWrite(recPtr, 50, &sndData.dataLen, 4); 
+				DmWrite(recPtr, 0, &recordingRec, sizeof(RecordingType));
 				MemHandleUnlock(h);
 				DmReleaseRecord(recordingDb, index, true);
 			}
@@ -1370,15 +1394,49 @@ static Boolean OneBPrefFormHandleEvent(EventType * eventP)
 	
 	switch(eventP->eType)
 	{
+		case nilEvent:
+		{
+			UInt32 keystate = KeyCurrentState();
+		}break;
 		case frmOpenEvent:
 		{
 			FrmDrawForm(frmP);	
 			CtlSetValue(GetObjectPtr(chkOneButton),oneButton);
 			CtlSetValue(GetObjectPtr(chkOBAfterReset), useOBRAfterReset);
-
+			t_obrKey = obrKey;
+			switch(t_obrKey)
+			{
+				case 1:
+					SetControlLabel(frmP, tgrOneButton, "Button 1");	
+					break;
+				case 2:
+					SetControlLabel(frmP, tgrOneButton, "Button 2");
+					break;
+				case 3:
+					SetControlLabel(frmP, tgrOneButton, "Button 3");
+					break;
+				case 4:
+					SetControlLabel(frmP, tgrOneButton, "Button 4");
+					break;
+				case 5:
+					SetControlLabel(frmP, tgrOneButton, "Center");
+					break;
+				default:
+					t_obrKey = 1;
+					SetControlLabel(frmP, tgrOneButton, "Button 1");
+					break;
+			}
 			handled = true;
 			break;
 			}
+	case popSelectEvent:
+		switch(eventP->data.popSelect.controlID)
+		{
+			case tgrOneButton:
+			t_obrKey = eventP->data.popSelect.selection+1;
+			break;
+		}
+		break;						
 		case ctlSelectEvent:
 			{
 				switch(eventP->data.ctlSelect.controlID)
@@ -1386,10 +1444,29 @@ static Boolean OneBPrefFormHandleEvent(EventType * eventP)
 					case btnOBPFSave:											
 						oneButton = CtlGetValue(GetObjectPtr(chkOneButton));	
 						useOBRAfterReset = CtlGetValue(GetObjectPtr(chkOBAfterReset));
+						obrKey = t_obrKey;
 						SavePreferences();										
 					case btnOBPFCancel:
 						FrmReturnToForm(MainForm);
-						break;
+						break;				
+/*					case tgrActButton:
+					{
+						EventType event;
+						WinHandle oldWin = 	DrawMessage("Select any button.");						
+						char buffer[4];
+						UInt32 keyState = 0;
+						SysTaskDelay(100);
+						do 
+						{
+							EvtGetEvent(&event, 1);
+							keyState = KeyCurrentState();
+						} while (event.eType != keyDownEvent || keyState == 0);
+						KillMessage(oldWin);
+						StrIToA(buffer, event.data.keyDown.chr);
+						SetControlLabel(frmP, tgrActButton, buffer);	
+						t_obrKey = event.data.keyDown.chr;
+						handled = true;
+					}break;*/
 				}
 			}
 			break;
@@ -1558,6 +1635,7 @@ static void LoadPreferences(void)
 		oneButton = prefs.OneButton;
 		useBeep = prefs.UseBeep;
 		sndQual = prefs.SampleRate;
+		obrKey = prefs.OBRKey;
 		switch(sndQual)
 		{
 			case 44:
@@ -1588,6 +1666,7 @@ static void SavePreferences(void)
 	prefs.SampleRate = sndQual;
 	prefs.RecVolume = recVol;
 	prefs.PlayVolume = playVol;
+	prefs.OBRKey = obrKey;
 	PrefSetAppPreferences(libCreatorID, libPrefID, 0, &prefs, sizeof(prefs), true);
 }
 
@@ -1774,9 +1853,7 @@ static void RefreshList(void)
 			{
 				cAudio->SupportsAlarm = true;				
 				cAudio->Alarm = (*usrRec).alarm;
-				cAudio->AlarmDay = (*usrRec).alarmDay;
-				cAudio->AlarmMonth = (*usrRec).alarmMonth;
-				cAudio->AlarmYear = (*usrRec).alarmYear;
+				cAudio->AlarmDateTime = (*usrRec).alarmDateTime;
 			}
 			else
 				cAudio->SupportsAlarm = false;
@@ -2034,6 +2111,51 @@ static void DrawCenterChars(int top, FontID font, char* text)
 	FntSetFont(oldFont);
 }
 
+static WinHandle DrawMessage(char* text)
+{
+	WinHandle orgWindow;
+	RectangleType newBounds, savedBounds;
+	Err err;
+	
+	newBounds.topLeft.x = 20;
+	newBounds.topLeft.y = 60;
+	newBounds.extent.x = 120;
+	newBounds.extent.y = 20;
+	
+	progWin = WinCreateWindow(&newBounds, boldRoundFrame, false, false, &err);
+	if(!err)
+	{
+		short nCharWidth = 0;
+		short width = 100, height = 0;
+
+		Char* pText = (Char*) MemPtrNew(StrLen(text) + 1);			
+		StrCopy(pText, text);
+		nCharWidth = FntCharsWidth(pText, StrLen(pText));  
+		//WinGetWindowExtent(&width, &height);		
+		WinGetWindowFrameRect(progWin, &savedBounds);
+		savedWin = WinSaveBits(&savedBounds, &err);
+		orgWindow = WinSetDrawWindow(progWin);				
+		WinEraseWindow();
+		WinDrawWindowFrame();					
+		WinDrawChars(pText, StrLen(pText), (width/2) - (nCharWidth/2), 5);
+		MemPtrFree(pText);	
+		
+		return orgWindow;
+	}
+	else return NULL;	
+}
+
+static void KillMessage(WinHandle orgWin)
+{
+	if(orgWin != NULL)
+	{
+		WinSetDrawWindow(orgWin);
+		WinDeleteWindow(progWin, true);	
+		WinRestoreBits(savedWin, 18,58);
+		progWin = NULL;
+	}
+}
+
 static Boolean DetailsFormHandleEvent(EventType * eventP)
 {
 	Boolean handled = false;
@@ -2043,26 +2165,80 @@ static Boolean DetailsFormHandleEvent(EventType * eventP)
 	{
 		case frmOpenEvent:
 		{
-			FrmDrawForm(frmP);	
+			audio * cAudio;
+			ListType *list = GetFormObjectPtr(MainForm, lstRecordings);
+			currentRecording = GetAudio(LstGetSelection(list));
+			cAudio = currentRecording;
 
+			
+			FrmDrawForm(frmP);								
+							
+			addFldString(frmP, fldTitle, cAudio->Description);
 
-			//set date and time to previous alarm and/or to today
+			//alarms are only supported on newer recordings
+			if(cAudio->Version < 106 || cAudio->Location != 0)
+			{
+				FrmHideObject(frmP, FrmGetObjectIndex(frmP, chkAlarm));
+				FrmHideObject(frmP, FrmGetObjectIndex(frmP, lblAlarm));
+				FrmHideObject(frmP, FrmGetObjectIndex(frmP, lblAlarmDate));
+				FrmHideObject(frmP, FrmGetObjectIndex(frmP, tgrAlarmDate));
+				FrmHideObject(frmP, FrmGetObjectIndex(frmP, tgrAlarmTime));
+				FrmHideObject(frmP, FrmGetObjectIndex(frmP, lblAlarmTime));																
+			}else
+			{
+				//set date and time to previous alarm and/or to today
+				DateTimeType *dateTimeP = NULL;
+				//char buffer[5];
+				char dtString[15];
+			
+				if(cAudio->Alarm)
+				{
+					CtlSetValue(GetObjectPtr(chkAlarm), cAudio->Alarm);
+					alarmDT = cAudio->AlarmDateTime;	
+				}
+				else			
+					TimSecondsToDateTime(TimGetSeconds(), &alarmDT);
+					
+				dateTimeP = &alarmDT;
+				
+				DateToAscii (dateTimeP->month, dateTimeP->day, dateTimeP->year, dfMDYLongWithComma, &dtString[0]);
+				
+				/*StrIToA(buffer, dateTimeP->month);
+				StrCopy(dtString, buffer);
+				StrCat(dtString,"/");
+				StrIToA(buffer, dateTimeP->day);
+				StrCat(dtString, buffer);
+				StrCat(dtString,"/");
+				StrIToA(buffer, dateTimeP->year);
+				StrCat(dtString, buffer);*/
 
-			handled = true;
-			break;
+				SetControlLabel(frmP, tgrAlarmDate, dtString);
+				
+				TimeToAscii (dateTimeP->hour, dateTimeP->minute, tfColonAMPM, &dtString[0]);
+				
+				/*StrIToA(buffer,dateTimeP->hour);
+				StrCopy(dtString, buffer);
+				StrCat(dtString, ":");
+				StrIToA(buffer,dateTimeP->minute);
+				StrCat(dtString, buffer);*/
+				
+				SetControlLabel(frmP, tgrAlarmTime, dtString);										
 			}
+		
+			handled = true;			
+			}break;
 		case ctlSelectEvent:
 			{
 				switch(eventP->data.ctlSelect.controlID)
 				{																	
 					case btnDetailOk:										
 					{
-						audio * cAudio;
-						ListType *list = GetObjectPtr(lstRecordings);
-						cAudio = GetAudio(LstGetSelection(list));
+						audio * cAudio;						
+						cAudio = currentRecording;;
+						
 						if(cAudio->Location == 0)
 						{
-							if(StrLen(FldGetTextPtr (GetFormObjectPtr(frmP, fldTitle))) > 0)
+							if(StrLen(FldGetTextPtr (GetObjectPtr(fldTitle))) > 0)
 							{
 								if(cAudio->RecordingDbId > 0)
 								{
@@ -2075,14 +2251,17 @@ static Boolean DetailsFormHandleEvent(EventType * eventP)
 									recH = DmGetRecord(recordingDb, recIndex);
 									recPtr = MemHandleLock(recH);
 									MemMove(usrRec, recPtr, sizeof(RecordingType));
-									StrCopy(&usrRec->recDesc[0], FldGetTextPtr(GetFormObjectPtr(frmP, fldTitle)));	
+									StrCopy(&usrRec->recDesc[0], FldGetTextPtr(GetObjectPtr(fldTitle)));
+									usrRec->alarm = CtlGetValue(GetObjectPtr(chkAlarm));
+									usrRec->alarmDateTime = alarmDT;
 									DmWrite(recPtr, 0, usrRec, sizeof(RecordingType));
 									MemHandleUnlock(recH);
 									DmReleaseRecord(recordingDb, recIndex, true);
 									MemPtrFree(usrRec);
 								}
-								
+								cAudio->AlarmDateTime = alarmDT;
 								FrmReturnToForm(MainForm);
+								RefreshList();
 							}
 							else						
 								FrmAlert(DescAlert);
@@ -2095,9 +2274,12 @@ static Boolean DetailsFormHandleEvent(EventType * eventP)
 							StrCopy(oldFile, SDAudioDir);
 							StrCat(oldFile, "/");
 							StrCat(oldFile, cAudio->Description);							
-							err = VFSFileRename(gVolRefNum, oldFile, FldGetTextPtr(GetFormObjectPtr(frmP, fldTitle)));
-							if(!err)							
+							err = VFSFileRename(gVolRefNum, oldFile, FldGetTextPtr(GetObjectPtr(fldTitle)));
+							if(!err)
+							{							
 								FrmReturnToForm(MainForm);
+								RefreshList();								
+							}
 							else
 							{
 								FrmAlert(FileAlert);
@@ -2106,14 +2288,37 @@ static Boolean DetailsFormHandleEvent(EventType * eventP)
 					}break;			
 					case tgrAlarmDate:
 					{
+						DateTimeType *dateTimeP = NULL;					
 						Int16 month = 12;
 						Int16 day = 01;
 						Int16 year = 2004;
+						audio * cAudio;
+						cAudio = currentRecording;
+						
+						//real basic check to see if there is close to valid data available
+						if(alarmDT.month < 1 || alarmDT.month > 12 || alarmDT.year < 1 || alarmDT.year > 3000 || alarmDT.day < 1 || alarmDT.day > 40)
+						{
+							dateTimeP = MemPtrNew(sizeof(DateTimeType));
+							TimSecondsToDateTime (TimGetSeconds(), dateTimeP);
+							month = dateTimeP->month;
+							day = dateTimeP->day;
+							year = dateTimeP->year;						
+							MemPtrFree(dateTimeP);
+						}else
+						{
+							month = alarmDT.month;
+							day = alarmDT.day;
+							year = alarmDT.year;
+						}
 						
 						if(SelectDay(selectDayByDay, &month, &day, &year, "Select Date"))
 						{
 							char dateString[15];
-							char buffer[5];
+							
+							DateToAscii (month, day, year, dfMDYLongWithComma, &dateString[0]);
+
+
+							/*char buffer[5];
 							
 							StrIToA(buffer, month);
 							StrCopy(dateString, buffer);
@@ -2124,10 +2329,58 @@ static Boolean DetailsFormHandleEvent(EventType * eventP)
 							StrCat(dateString, "/");
 
 							StrIToA(buffer, year);
-							StrCat(dateString, buffer);
+							StrCat(dateString, buffer);*/
 							
 							SetControlLabel(frmP, tgrAlarmDate, dateString);
+							
+							alarmDT.month = month;
+							alarmDT.year = year;
+							alarmDT.day = day;
 						}
+					}break;
+					case tgrAlarmTime:
+					{
+						DateTimeType *dateTimeP = NULL;
+						UInt16 hour = 12;
+						UInt16 minute = 0;
+						audio * cAudio;
+						cAudio = currentRecording;					
+
+						//real basic check to see if there is close to valid data available
+						if(alarmDT.hour < 1 || alarmDT.hour > 24 || alarmDT.minute < 0 || alarmDT.minute > 60)
+						{
+							dateTimeP = MemPtrNew(sizeof(DateTimeType));
+							TimSecondsToDateTime (TimGetSeconds(), dateTimeP);
+							hour = dateTimeP->month;
+							minute = dateTimeP->day;
+							MemPtrFree(dateTimeP);
+						}else
+						{
+							hour = alarmDT.hour;
+							minute = alarmDT.minute;
+						}						
+						
+						if( SelectOneTime((short *) &hour, (short *) &minute, NULL))
+						{
+							char timeString[15];
+							
+							TimeToAscii (hour, minute, tfColonAMPM, &timeString[0]);
+
+							
+/*							char buffer[5];
+							
+							StrIToA(buffer, hour);
+							StrCopy(dateString, buffer);
+							StrCat(dateString, ":");
+							
+							StrIToA(buffer, minute);
+							StrCat(dateString, buffer);
+							*/
+							SetControlLabel(frmP, tgrAlarmTime, timeString);						
+							
+							alarmDT.minute = minute;
+							alarmDT.hour = hour;
+						}						
 					}break;
 					case btnDetailCancel:
 						FrmReturnToForm(MainForm);

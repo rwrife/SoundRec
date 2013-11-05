@@ -145,25 +145,27 @@ BITMAPCOLOR ID bmpRecord  "record.bmp" TRANSPARENT 255  0  0
 
 BITMAPCOLOR ID bmpPlay  "play.bmp" TRANSPARENT 255  0  0
 
-FORM ID DetailForm  AT ( 2 52 156 106 )
+FORM ID DetailForm  AT ( 2 36 156 122 )
 MODAL FRAME DEFAULTBTNID btnDetailOk
 BEGIN
         TITLE "Details"
 	
-	BUTTON "OK" ID btnDetailOk  AT (4 91 AUTO AUTO)
-	BUTTON "Cancel" ID btnDetailCancel   AT (33 91 AUTO AUTO)
-	BUTTON "Delete" ID btnDetailDel    AT (107 91 AUTO AUTO)
+	BUTTON "OK" ID btnDetailOk  AT (4 106 AUTO AUTO)
+	BUTTON "Cancel" ID btnDetailCancel   AT (33 106 AUTO AUTO)
+	BUTTON "Delete" ID btnDetailDel    AT (107 106 AUTO AUTO)
 	FIELD ID fldTitle  AT (4 18 148 AUTO) MAXCHARS 39 EDITABLE AUTOSHIFT UNDERLINED 
-	GRAFFITISTATEINDICATOR AT (147 95)
-	LABEL "Date:" ID lblAlarmDate  AT (14 52) FONT 1
-	LABEL "Time:" ID lblAlarmTime  AT (14 71) FONT 1
+	GRAFFITISTATEINDICATOR AT (147 110)
+	LABEL "Date:" ID lblAlarmDate  AT (14 67) FONT 1
+	LABEL "Time:" ID lblAlarmTime  AT (14 86) FONT 1
 	 
-	LABEL "Alarm:" ID lblAlarm  AT (9 34) FONT 1
-	CHECKBOX "" ID chkAlarm  AT (48 34 AUTO AUTO)
+	LABEL "Alarm:" ID lblAlarm  AT (9 48) FONT 1
+	CHECKBOX "" ID chkAlarm  AT (48 48 AUTO AUTO)
 	
 	
-	SELECTORTRIGGER  "" ID tgrAlarmDate  AT (49 48 79 13)
-	SELECTORTRIGGER  "" ID tgrAlarmTime  AT (49 67 79 13)
+	SELECTORTRIGGER  "" ID tgrAlarmDate  AT (49 63 79 13)
+	SELECTORTRIGGER  "" ID tgrAlarmTime  AT (49 82 79 13)
+	LABEL "Length:" ID lblLength  AT (6 33)
+	LABEL "Size:" ID lblSize  AT (87 33)
 END
 
 ALERT ID DelAlert 
@@ -236,6 +238,10 @@ BEGIN
 	BUTTON "Cancel" ID btnOBPFCancel   AT (116 141 AUTO 12)
 	BUTTON "Save" ID btnOBPFSave   AT (80 141 AUTO 12)
 		CHECKBOX "Enable OBR After Reset" ID chkOBAfterReset    AT (5 33 135 11)
+	LABEL "Activation Button:" AUTOID AT (6 50)
+		POPUPTRIGGER "Button 1" ID tgrOneButton   AT (83 51 57 12)
+LIST  "Button 1" "Button 2" "Button 3" "Button 4" "Center" ID lstOneButton    AT (PREVLEFT PREVBOTTOM+1 PREVWIDTH 35) VISIBLEITEMS 3 NONUSABLE 
+POPUPLIST ID tgrOneButton  lstOneButton
 END
 
 MENU AUTOID
