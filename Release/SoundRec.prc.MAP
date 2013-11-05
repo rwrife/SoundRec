@@ -1,0 +1,191 @@
+File:    1	"__RuntimeModule__"
+File:    2	"C:\Program Files\Metrowerks\CodeWarrior\Palm OS Support\CodeWarrior Libraries\Runtime\PalmOSRuntime_2i_A5.lib"
+File:    3	"CPlusLib68K.cp"
+File:    4	"Exception68K.cp"
+File:    5	"LongLong68K.c"
+File:    6	"MWRTTI.cp"
+File:    7	"NMWException.cp"
+File:    8	"NewMore.cp"
+File:    9	"New.cp"
+File:   10	"PalmOS_AbortExit.cpp"
+File:   11	"PalmOS_GlobalDestructors.c"
+File:   12	"PalmOS_setjmp.c"
+File:   13	"PalmOS_Startup.cpp"
+File:   14	"CWRuntime.c"
+File:   15	"C:\Program Files\Metrowerks\CodeWarrior\CW for Palm OS Support\MSL\MSL_C++\MSL_Palm_OS\Lib\68K\MSL_C++_PalmOS_2i.lib"
+File:   16	"C:\Program Files\Metrowerks\CodeWarrior\CW for Palm OS Support\MSL\MSL_C++\MSL_Common\Src\ios.cpp"
+File:   17	"C:\Program Files\Metrowerks\CodeWarrior\CW for Palm OS Support\MSL\MSL_C++\MSL_Common\Src\iostream.cpp"
+File:   18	"C:\Program Files\Metrowerks\CodeWarrior\CW for Palm OS Support\MSL\MSL_C++\MSL_Common\Src\MSLstring.cpp"
+File:   19	"C:\Program Files\Metrowerks\CodeWarrior\CW for Palm OS Support\MSL\MSL_C++\MSL_Common\Src\mutex.cpp"
+File:   20	"C:\Program Files\Metrowerks\CodeWarrior\CW for Palm OS Support\MSL\MSL_C++\MSL_Common\Src\strstream.cpp"
+File:   21	"C:\Program Files\Metrowerks\CodeWarrior\CW for Palm OS Support\MSL\MSL_C++\MSL_Common\Src\complex.cpp"
+File:   22	"C:\Program Files\Metrowerks\CodeWarrior\CW for Palm OS Support\MSL\MSL_C\MSL_Common\Src\float.c"
+File:   23	"C:\Program Files\Metrowerks\CodeWarrior\CW for Palm OS Support\MSL\MSL_C\MSL_Common\Src\errno.c"
+File:   24	"C:\Program Files\Metrowerks\CodeWarrior\CW for Palm OS Support\MSL\MSL_C\MSL_Common\Src\string.c"
+File:   25	"C:\Program Files\Metrowerks\CodeWarrior\CW for Palm OS Support\MSL\MSL_C\MSL_Common\Src\qsort.c"
+File:   26	"C:\Program Files\Metrowerks\CodeWarrior\CW for Palm OS Support\MSL\MSL_C\MSL_Common\Src\arith.c"
+File:   27	"C:\Program Files\Metrowerks\CodeWarrior\CW for Palm OS Support\MSL\MSL_C\MSL_Common\Src\bsearch.c"
+File:   28	"C:\Program Files\Metrowerks\CodeWarrior\CW for Palm OS Support\MSL\MSL_C\MSL_Common\Src\rand.c"
+File:   29	"C:\Program Files\Metrowerks\CodeWarrior\CW for Palm OS Support\MSL\MSL_C\MSL_Common\Src\ctype.c"
+File:   30	"C:\Program Files\Metrowerks\CodeWarrior\CW for Palm OS Support\MSL\MSL_C\MSL_Common\Src\locale.c"
+File:   31	"C:\Documents and Settings\rifer\My Documents\SoundRec\Rsc\SoundRec_Rsc.rcp"
+File:   32	"C:\Documents and Settings\rifer\My Documents\SoundRec\Src\SoundRec.c"
+File:   33	"C:\Documents and Settings\rifer\My Documents\SoundRec\Src\OneButton.c"
+
+Segment:   1   15076 bytes  "Segment 1"
+Code: 000004      12 bytes  "__DummyStartup__"               File: "__RuntimeModule__"
+Code: 000010      12 bytes  "__dthandler__4MTWKFv"           File: "NMWException.cp"
+Code: 00001c      12 bytes  "__duhandler__4MTWKFv"
+Code: 000028      16 bytes  "terminate__3stdFv"
+Code: 000038      24 bytes  "abort"                          File: "PalmOS_AbortExit.cpp"
+Code: 000050      42 bytes  "__destroy_global_chain"         File: "PalmOS_GlobalDestructors.c"
+Code: 00007a      14 bytes  "setjmp"                         File: "PalmOS_setjmp.c"
+Code: 000088      18 bytes  "longjmp"
+Code: 00009a     154 bytes  "__Relocate____4MTWKFPScPScUl"   File: "PalmOS_Startup.cpp"
+Code: 000134     314 bytes  "__Startup__"
+Code: 00026e       8 bytes  "__PreInit__"
+Code: 000276       8 bytes  "__InitCode__"
+Code: 00027e     132 bytes  "__SkipToXREFs____4MTWKFPSc"
+Code: 000302     128 bytes  "__PatchV10Devices____4MTWKFP14SysAppInfoType"
+Code: 000382     234 bytes  "__LoadAndRelocate____4MTWKFUcP7_opaque"
+Code: 00046c      98 bytes  "CardWritable"                   File: "C:\Documents and Settings\rifer\My Documents\SoundRec\Src\SoundRec.c"
+Code: 0004ce     498 bytes  "dispTimer"
+Code: 0006c0      50 bytes  "FrmSetObjectFocusMode"
+Code: 0006f2     142 bytes  "CustomNavOrder"
+Code: 000780      34 bytes  "GetFormObjectPtr"
+Code: 0007a2      34 bytes  "GetObjectPtr"
+Code: 0007c4     164 bytes  "MainListDraw"
+Code: 000868     398 bytes  "CaptureSound"
+Code: 0009f6     310 bytes  "PlaySound"
+Code: 000b2c      54 bytes  "MainFormInit"
+Code: 000b62    1106 bytes  "MainFormDoCommand"
+Code: 000fb4    2628 bytes  "MainFormHandleEvent"
+Code: 0019f8     128 bytes  "AppHandleEvent"
+Code: 001a78      90 bytes  "AppEventLoop"
+Code: 001ad2      16 bytes  "AppStart"
+Code: 001ae2     174 bytes  "AppStop"
+Code: 001b90     148 bytes  "RomVersionCompatible"
+Code: 001c24     116 bytes  "PilotMain"
+Code: 001c98     186 bytes  "OpenDatabase"
+Code: 001d52     206 bytes  "DataInit"
+Code: 001e20      28 bytes  "UpdateList"
+Code: 001e3c     364 bytes  "SaveBuffer"
+Code: 001fa8     130 bytes  "OneBPrefFormHandleEvent"
+Code: 00202a     880 bytes  "RecPrefFormHandleEvent"
+Code: 00239a     300 bytes  "PrefFormHandleEvent"
+Code: 0024c6     142 bytes  "LoadPreferences"
+Code: 002554      66 bytes  "SavePreferences"
+Code: 002596     726 bytes  "CreateWavFile"
+Code: 00286c     112 bytes  "ByteSwap32"
+Code: 0028dc      64 bytes  "ByteSwap16"
+Code: 00291c      86 bytes  "WindowEraseRegion"
+Code: 002972     568 bytes  "RefreshList"
+Code: 002baa      76 bytes  "FreeAudio"
+Code: 002bf6      32 bytes  "GetAudio"
+Code: 002c16      38 bytes  "NewAudio"
+Code: 002c3c     126 bytes  "InitProgressBar"
+Code: 002cba     222 bytes  "UpdateProgressBar"
+Code: 002d98      50 bytes  "KillProgressBar"
+Code: 002dca     436 bytes  "DeleteSelection"
+Code: 002f7e     102 bytes  "SetControlLabel"
+Code: 002fe4     150 bytes  "DrawCenterChars"
+Code: 00307a     670 bytes  "ProcessCmdNotify"               File: "C:\Documents and Settings\rifer\My Documents\SoundRec\Src\OneButton.c"
+Code: 003318     130 bytes  "RegisterForNotifications"
+Code: 00339a      48 bytes  "UnregisterForNotifications"
+Code: 0033ca      24 bytes  "WriteIntFtrValue"
+Code: 0033e2      24 bytes  "WriteInt32FtrValue"
+Code: 0033fa      36 bytes  "SendKeyEvent"
+Code: 00341e      30 bytes  "SendNilEvent"
+Code: 00343c     422 bytes  "InitRecording"
+Code: 0035e2     740 bytes  "SaveRecording"
+Code: 0038c6     170 bytes  "OpenDatabase"
+Code: 003970     372 bytes  "CaptureSound"
+
+Data section below A5:    194 bytes
+Data section above A5:    168 bytes
+
+Initialized near data
+Data:     -1       1 bytes  "playVol"
+Data:     -2       1 bytes  "recVol"
+Data:     -4       2 bytes  "soundRate"
+Data:     -5       1 bytes  "sndQual"
+Data:     -6       1 bytes  "useBeep"
+Data:    -54      48 bytes  "months"
+Data:    -56       2 bytes  "gVolRefNum"
+Data:    -60       4 bytes  "gSndStreamRef"
+Data:    -61       1 bytes  "SoundVersion"
+
+Uninitialized near data
+Data:    -66       4 bytes  "__CW_FEATURES_PTR"
+Data:    -70       4 bytes  "__global_destructor_chain"
+Data:    -74       4 bytes  "soundDb"
+Data:    -78       4 bytes  "recordingDb"
+Data:   -102      24 bytes  "sndData"
+Data:   -106       4 bytes  "audioList"
+Data:   -110       4 bytes  "progWin"
+Data:   -114       4 bytes  "savedWin"
+Data:   -118       4 bytes  "mainForm"
+Data:   -158      40 bytes  "recDesc"
+Data:   -162       4 bytes  "sec"
+Data:   -166       4 bytes  "min"
+Data:   -170       4 bytes  "hr"
+Data:   -174       4 bytes  "timePaused"
+Data:   -178       4 bytes  "pauseTime"
+Data:   -182       4 bytes  "startTime"
+Data:   -183       1 bytes  "timeOn"
+Data:   -186       2 bytes  "lastHighlight"
+Data:   -188       2 bytes  "audioListCount"
+Data:   -189       1 bytes  "oneButton"
+Data:   -190       1 bytes  "useCard"
+Data:   -191       1 bytes  "playing"
+Data:   -192       1 bytes  "recording"
+Data:   -194       2 bytes  "cardId"
+
+Initialized far data
+Data:     40     128 bytes  "__segtable__"
+
+-----
+
+PRC DB Name:       SoundRec
+PRC DB Version:    2
+Type:              appl
+Creator:           RRSR
+Resource Count:    29
+Creation Time:     2004-06-18 @ 1254
+Modification Time: 2004-06-18 @ 1254
+Last Backup Time:  
+Attributes:         0x00000009
+                    dmHdrAttrResDB
+                    dmHdrAttrBackup
+
+1:   tAIN           Application Name String            1000 (0x03e8)     9
+[SoundRec]
+2:   tver           Application Version String         1000 (0x03e8)     6
+[1.051]
+3:   code           68K Object Code                    1 (0x0001)        15076
+4:   data           68K Global Data                    0 (0x0000)        166
+5:   code           68K Object Code                    0 (0x0000)        24
+6:   MBAR           Menu Bar                           1001 (0x03e9)     302
+7:   MBAR           Menu Bar                           1009 (0x03f1)     181
+8:   Talt           Alert                              1011 (0x03f3)     98
+9:   tFRM           Form                               1012 (0x03f4)     272
+10:   tFRM           Form                               1018 (0x03fa)     342
+11:   tAIB           Application Icon                   1000 (0x03e8)     1108
+12:   tAIB           Application Icon                   1001 (0x03e9)     368
+13:   tFRM           Form                               1023 (0x03ff)     244
+14:   Tbmp           Bitmap                             1033 (0x0409)     116
+15:   Tbmp           Bitmap                             1034 (0x040a)     116
+16:   Talt           Alert                              1035 (0x040b)     94
+17:   Tbmp           Bitmap                             1036 (0x040c)     116
+18:   Tbmp           Bitmap                             1037 (0x040d)     116
+19:   Tbmp           Bitmap                             1016 (0x03f8)     116
+20:   tFRM           Form                               1038 (0x040e)     248
+21:   Talt           Alert                              1043 (0x0413)     80
+22:   Talt           Alert                              1044 (0x0414)     114
+23:   Talt           Alert                              1045 (0x0415)     65
+24:   Talt           Alert                              1052 (0x041c)     142
+25:   Talt           Alert                              1053 (0x041d)     114
+26:   Talt           Alert                              1054 (0x041e)     94
+27:   tFRM           Form                               1005 (0x03ed)     414
+28:   tFRM           Form                               1006 (0x03ee)     302
+29:   MBAR           Menu Bar                           9989 (0x2705)     145
